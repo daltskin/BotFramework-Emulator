@@ -23,7 +23,7 @@ const use = [
   },
   'ts-loader'
 ];
-const defaultConfig = {
+const getDefaultConfig = (mode = null) => ({
   entry: {
     index: require.resolve('./src/index.tsx')
   },
@@ -109,7 +109,7 @@ const defaultConfig = {
   output: {
     path: path.resolve('./public'),
     filename: '[name].js',
-    publicPath: 'http://localhost:3000/',
+    publicPath: mode && (mode === 'development') ? 'http://localhost:3000/' : '/',
   },
 
   plugins: [
@@ -133,14 +133,14 @@ const defaultConfig = {
       './src/**/*.d.ts'
     ])
   ]
-};
+});
 
 const buildConfig = mode => {
   const config = {
-    ...defaultConfig,
+    ...getDefaultConfig(mode),
 
     plugins: [
-      ...defaultConfig.plugins,
+      ...getDefaultConfig(mode).plugins,
       new DllReferencePlugin({ manifest: require(path.join(manifestLocation, 'vendors-manifest.json')) }),
       new DllReferencePlugin({ manifest: require(path.join(manifestLocation, 'shared-manifest.json')) })
     ]
@@ -152,13 +152,13 @@ const buildConfig = mode => {
 };
 
 const sharedConfig = () => ({
-  ...defaultConfig,
+  ...getDefaultConfig(),
   entry: {
     shared: [path.resolve('./src/shared.ts')]
   },
 
   output: {
-    ...defaultConfig.output,
+    ...getDefaultConfig().output,
     library: '[name]_[hash]'
   },
 
@@ -167,7 +167,7 @@ const sharedConfig = () => ({
   },
 
   plugins: [
-    ...defaultConfig.plugins,
+    ...getDefaultConfig().plugins,
     new DllPlugin({
       path: path.join(manifestLocation, 'shared-manifest.json'),
       name: '[name]_[hash]'
@@ -178,18 +178,18 @@ const sharedConfig = () => ({
 });
 
 const vendorsConfig = () => ({
-  ...defaultConfig,
+  ...getDefaultConfig(),
   entry: {
     vendors: [path.resolve('./src/vendors.ts')]
   },
 
   output: {
-    ...defaultConfig.output,
+    ...getDefaultConfig().output,
     library: '[name]_[hash]'
   },
 
   plugins: [
-    ...defaultConfig.plugins,
+    ...getDefaultConfig().plugins,
     new DllPlugin({
       path: path.join(manifestLocation, 'vendors-manifest.json'),
       name: '[name]_[hash]'
